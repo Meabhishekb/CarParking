@@ -1,42 +1,49 @@
-let car_slot = {
-    slot1 : null,
-    slot2 : null
-}
-
-let recentlyVacantParkings = [];
+recentlyVacantParkings = [];
+parkingSlot = objectLoop = process.env.PARKING_SIZE
+parkingObj = {};
 
 module.exports = (app) => { 
     app.get('/',(req,res)=>{
-        res.send(car_slot)
+        res.send(parkingObj)
     })
 
+    //Assuming All cars will have different car number so condition is not given
     app.get('/CarNo/:carNo',(req,res)=>{
         let parked = null;
+        // if car parking is very big and we not want to go through every paking slot and see which one is free
+        // rather using the parking slot vacant recently
         if(recentlyVacantParkings.length){
-            car_slot[recentlyVacantParkings[0]] = req.params.carNo;
+            parkingObj[recentlyVacantParkings[0]] = req.params.carNo;
             parked = recentlyVacantParkings[0];
             recentlyVacantParkings.shift();
+            parkingSlot--;
         }
-        else{
-            for(let slot in car_slot){
-                if(car_slot[slot] == null){
-                    car_slot[slot] = req.params.carNo;
-                    parked = slot
-                    break;
+        else{  //if no parking slot is vacant recently
+            //res.send(parkingSlot)
+            let value = false;
+            if(parkingSlot != 0){
+                for(let i = 0; i < objectLoop; i++){
+                    if(parkingObj[i] == undefined){
+                        parkingSlot--;
+                        parkingObj[i] = req.params.carNo;
+                        parked = i;
+                        break;
+                    }
                 }
             }
         }
         if(parked == null){
             res.send("Parking Full")
         }
-        res.send(parked)
+        res.send({'Parked slot' : parked})
     })
 
 
     app.get('/SlNo/:slotNo',(req,res) => {
         let slot = req.params.slotNo
-        if(car_slot[slot] != null){
-            car_slot[slot] = null;
+        if(parkingObj[slot] != undefined){ // Vacating the parking space
+            parkingObj[slot] = undefined;
+            parkingSlot++;
             recentlyVacantParkings.push(slot)
         }
         res.send(slot + "empty for parking" + recentlyVacantParkings);
@@ -45,14 +52,14 @@ module.exports = (app) => {
     app.get('/Info/:info',(req,res)=>{
         let carDetailsArr = [];
         let info = req.params.info;
-        if(car_slot[info] != null){ //To find with slot number
+        if(parkingObj[info] != null){ //To find with slot number
             carDetailsArr.push({
-                CarNo : car_slot[info],
+                CarNo : parkingObj[info],
                 parking : info
             })
         }
         else{ //find with car no
-            let slot = Object.keys(car_slot).find(key => car_slot[key] === info)
+            let slot = Object.keys(parkingObj).find(key => parkingObj[key] === info)
             if(slot){
                 carDetailsArr.push({
                     carNo : info,
