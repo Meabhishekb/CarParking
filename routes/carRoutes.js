@@ -35,7 +35,7 @@ module.exports = (app) => {
         if(parked == null){
             res.send("Parking Full")
         }
-        res.send({'Parked slot' : parked})
+        res.send("Parked slot - " + parked)
     })
 
 
@@ -45,8 +45,11 @@ module.exports = (app) => {
             parkingObj[slot] = undefined;
             parkingSlot++;
             recentlyVacantParkings.push(slot)
+            res.send("Slot " + slot + " empty for parking" );
         }
-        res.send(slot + "empty for parking" + recentlyVacantParkings);
+        else{
+            res.send("Parking slot already empty or no such parking slot present" );
+        }
     })
 
     app.get('/Info/:info',(req,res)=>{
@@ -62,16 +65,16 @@ module.exports = (app) => {
             let slot = Object.keys(parkingObj).find(key => parkingObj[key] === info)
             if(slot){
                 carDetailsArr.push({
-                    carNo : info,
+                    CarNo : info,
                     parking : slot
                 })
             }
         }
         if(carDetailsArr.length){
-            res.send(carDetailsArr)
+            res.send("Car No - " + carDetailsArr[0].CarNo + " Slot - " + carDetailsArr[0].parking)
         }
         else{
-            res.send({message: "No Record Found "})
+            res.send("No Record Found ")
         }
 
     })
